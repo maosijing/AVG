@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>平均数演示 · 小学数学</title>
+<style>
+:root{
+  --blue:#2f7de1;
+  --blue-d:#1f66c4;
+  --red:#e8453c;
+  --green:#2fbf9b;
+  --ink:#2c3e50;
+  --muted:#8a9bb0;
+  --line:#e6edf6;
+  --bg:#f2f6fc;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;}
+body{
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);overflow:hidden;
+}
+.app{display:flex;height:100vh;gap:14px;padding:14px;}
+
+/* ---------- 左侧面板 ---------- */
+.panel{
+  flex:0 0 38%;max-width:540px;min-width:340px;
+  background:#fff;border-radius:16px;padding:18px 18px 22px;
+  overflow-y:auto;border:1px solid #e8eef7;
+  box-shadow:0 4px 18px rgba(60,90,130,.07);
+}
+.panel::-webkit-scrollbar{width:6px;}
+.panel::-webkit-scrollbar-thumb{background:#dbe5f0;border-radius:3px;}
+
+.panel-title{font-size:19px;margin:0 0 16px;color:#1f3350;font-weight:700;letter-spacing:.5px;}
+
+.block{margin-bottom:16px;}
+.block h3{
+  font-size:13.5px;color:#7b8ca3;font-weight:700;margin:0 0 9px;
+  letter-spacing:.6px;display:flex;align-items:center;gap:6px;
+}
+.block h3::before{
+  content:'';width:4px;height:14px;border-radius:2px;background:#9dc4f5;
+}
+
+.field{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.field label{font-size:14px;color:#51647c;flex:0 0 92px;}
+.field input{
+  flex:1;min-width:0;border:1px solid #dbe5f0;background:#f8fbff;border-radius:8px;
+  padding:7px 10px;font-size:14px;font-family:inherit;color:var(--ink);outline:none;
+  transition:.15s;
+}
+.field input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(47,125,225,.13);}
+
+/* 数据行 */
+.data-row{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 8px;border-radius:11px;background:#f8fbff;
+  border:1px solid #edf3fa;margin-bottom:8px;
+}
+.dot{width:13px;height:13px;border-radius:4px;flex:0 0 auto;box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.name-input{
+  flex:1 1 auto;min-width:0;border:1px solid #dbe5f0;background:#fff;border-radius:7px;
+  padding:5px 8px;font-size:14px;font-family:inherit;color:var(--ink);outline:none;
+}
+.name-input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(47,125,225,.15);}
+.val{
+  min-width:32px;text-align:center;font-weight:800;font-size:16.5px;color:#1f3350;
+  font-variant-numeric:tabular-nums;
+}
+.rbtn{
+  width:27px;height:27px;border-radius:50%;border:none;cursor:pointer;flex:0 0 auto;
+  font-size:17px;font-weight:700;display:grid;place-items:center;padding:0;
+  font-family:inherit;transition:.15s;line-height:1;
+}
+.rbtn.minus,.rbtn.plus{background:#e6f0ff;color:var(--blue);}
+.rbtn.minus:hover,.rbtn.plus:hover{background:#d2e4ff;transform:scale(1.08);}
+.rbtn.del{background:#ffe9e7;color:var(--red);font-size:15px;}
+.rbtn.del:hover{background:#ffd8d5;transform:scale(1.08);}
+.rbtn:active{transform:scale(.94);}
+
+/* 按钮 */
+.btn{
+  border:none;cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:600;
+  border-radius:10px;padding:9px 16px;transition:.16s;letter-spacing:.5px;
+}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(47,125,225,.3);}
+.btn-primary:hover{background:var(--blue-d);transform:translateY(-1px);}
+.btn-ghost{background:#eef4fc;color:#48617f;}
+.btn-ghost:hover{background:#e2ecfa;}
+
+.add-btn{
+  background:#eaf3ff;color:var(--blue);border:1.5px dashed #a9cbf5;
+  border-radius:10px;padding:9px 16px;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:.16s;
+}
+.add-btn:hover{background:#dcecff;border-color:var(--blue);}
+
+/* 复选 */
+.checks{display:flex;flex-wrap:wrap;gap:14px;}
+.chk{display:flex;align-items:center;gap:6px;font-size:14px;color:#4a5e75;cursor:pointer;user-select:none;}
+.chk input{width:17px;height:17px;accent-color:var(--blue);cursor:pointer;}
+
+/* 统计 · 学生填写 */
+.stats{background:#f8fbff;border:1px solid #edf3fa;border-radius:12px;padding:10px 14px;}
+.stat-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;font-size:14.5px;color:#5b6f87;
+}
+.answer-line{display:flex;align-items:center;gap:6px;}
+.ans-input{
+  width:82px;
+  border:1.5px solid #dbe5f0;background:#fff;border-radius:8px;
+  padding:5px 8px;font-size:15px;font-weight:800;font-family:inherit;
+  color:#1f3350;text-align:center;outline:none;transition:.15s;
+  font-variant-numeric:tabular-nums;
+}
+.ans-input::placeholder{color:#c2cfe0;font-weight:600;}
+.ans-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,125,225,.13);}
+.ans-input.ok{border-color:var(--green);background:#f0fbf7;color:#1a9e7a;}
+.ans-input.bad{border-color:var(--red);background:#fff5f4;color:#c93a32;}
+.ans-input.bad{animation:shake .3s;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-3px);}
+  75%{transform:translateX(3px);}
+}
+.ans-mark{
+  width:20px;font-size:16px;font-weight:800;text-align:center;
+}
+.ans-mark.ok{color:var(--green);}
+.ans-mark.bad{color:var(--red);}
+
+.btn-check{
+  width:100%;margin-top:10px;padding:10px;border-radius:10px;
+  background:#eaf3ff;color:var(--blue);border:1.5px solid #c9dffb;
+  font-size:15px;font-weight:700;
+}
+.btn-check:hover{background:#dcecff;border-color:var(--blue);}
+.btn-check:active{transform:scale(.98);}
+
+.btn-row{display:flex;gap:10px;margin-top:14px;}
+.btn-row .btn{flex:1;}
+
+/* ---------- 右侧画布 ---------- */
+.stage{
+  flex:1;min-width:0;background:#fff;border-radius:16px;
+  padding:16px 18px 14px;display:flex;flex-direction:column;
+  border:1px solid #e8eef7;box-shadow:0 4px 18px rgba(60,90,130,.07);
+}
+.stage-head{margin-bottom:10px;}
+.stage-head h2{font-size:17px;margin:0 0 6px;color:#1f3350;font-weight:700;}
+.tip{
+  margin:0;font-size:13px;color:#e07b3c;background:#fff7ef;
+  border-left:4px solid #ffb347;
+  border-radius:0 8px 8px 0;
+  padding:6px 12px;line-height:1.6;
+}
+.canvas-wrap{flex:1;min-height:0;position:relative;}
+#chart{position:absolute;inset:0;width:100%;height:100%;display:block;user-select:none;}
+
+/* ---------- 弹窗 ---------- */
+.modal-mask{
+  position:fixed;inset:0;background:rgba(28,45,68,.45);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;visibility:hidden;transition:.22s;z-index:99;
+  backdrop-filter:blur(2px);
+}
+.modal-mask.on{opacity:1;visibility:visible;}
+.modal-box{
+  background:#fff;border-radius:18px;padding:26px 28px 22px;max-width:520px;width:100%;
+  box-shadow:0 18px 50px rgba(20,40,70,.28);transform:translateY(14px) scale(.97);
+  transition:.25s cubic-bezier(.2,.9,.3,1.2);
+}
+.modal-mask.on .modal-box{transform:none;}
+.modal-box h3{
+  margin:0 0 14px;font-size:19px;color:#1f3350;
+  display:flex;align-items:center;gap:9px;
+}
+.modal-box h3::before{content:'💡';font-size:22px;}
+.modal-box p{
+  font-size:16px;line-height:2;color:#40556e;margin:0 0 20px;
+  background:#f6faff;border-radius:12px;padding:16px 18px;
+  border:1px solid #e6effb;
+}
+.modal-box p b{color:var(--blue);}
+.modal-box p em{color:var(--red);font-style:normal;font-weight:700;}
+.modal-box .btn{width:100%;padding:11px;}
+
+/* toast */
+.toast{
+  position:fixed;left:50%;bottom:46px;transform:translate(-50%,22px);
+  background:#2c3e50;color:#fff;padding:13px 26px;border-radius:13px;
+  font-size:15.5px;font-weight:600;opacity:0;transition:.35s cubic-bezier(.2,.9,.3,1.2);
+  pointer-events:none;z-index:200;box-shadow:0 10px 28px rgba(0,0,0,.22);
+  white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;
+}
+.toast.on{opacity:1;transform:translate(-50%,0);}
+.toast.good{background:linear-gradient(135deg,#2fbf9b,#1a9e7a);}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:900px){
+  html,body{overflow:auto;}
+  .app{flex-direction:column;height:auto;min-height:100vh;padding:10px;gap:10px;}
+  .panel{flex:none;width:100%;max-width:none;min-width:0;}
+  .stage{min-height:0;height:78vh;}
+  .canvas-wrap{min-height:340px;}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ============ 左侧控制面板 ============ -->
+  <aside class="panel">
+    <h1 class="panel-title">平均数计算器</h1>
+
+    <!-- 坐标轴设置 -->
+    <section class="block">
+      <h3>坐标轴设置</h3>
+      <div class="field"><label>Y轴最小值：</label><input id="yMinInp" type="number" value="0" min="0" step="1"></div>
+      <div class="field"><label>Y轴最大值：</label><input id="yMaxInp" type="number" value="13" min="1" step="1"></div>
+      <div class="field"><label>单位：</label><input id="unitInp" type="text" value="个" placeholder="例如：个、米、元"></div>
+    </section>
+
+    <!-- 数据设置 -->
+    <section class="block">
+      <h3>数据设置</h3>
+      <div id="dataList"></div>
+      <button class="add-btn" id="addBtn">＋ 添加数据</button>
+    </section>
+
+    <!-- 图表类型 -->
+    <section class="block">
+      <h3>图表类型</h3>
+      <div class="checks">
+        <label class="chk"><input type="checkbox" id="chkAvg"><span>显示平均线</span></label>
+        <label class="chk"><input type="checkbox" id="chkLine" checked><span>显示折线图</span></label>
+      </div>
+    </section>
+
+    <!-- 统计信息 · 学生填写 -->
+    <section class="block">
+      <h3>自己算一算，填一填</h3>
+      <div class="stats">
+        <div class="stat-row">
+          <span>总和：</span>
+          <span class="answer-line">
+            <input id="ansSum" class="ans-input" type="text" inputmode="decimal" placeholder="?" autocomplete="off">
+            <span class="ans-mark" id="markSum"></span>
+          </span>
+        </div>
+        <div class="stat-row">
+          <span>个数：</span>
+          <span class="answer-line">
+            <input id="ansCount" class="ans-input" type="text" inputmode="numeric" placeholder="?" autocomplete="off">
+            <span class="ans-mark" id="markCount"></span>
+          </span>
+        </div>
+        <div class="stat-row">
+          <span>平均数：</span>
+          <span class="answer-line">
+            <input id="ansAvg" class="ans-input" type="text" inputmode="decimal" placeholder="?" autocomplete="off">
+            <span class="ans-mark" id="markAvg"></span>
+          </span>
+        </div>
+      </div>
+      <button class="btn btn-check" id="checkBtn">检查答案</button>
+    </section>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="resetBtn" title="回到你输入数据时的样子">重置</button>
+      <button class="btn btn-primary" id="conceptBtn">平均数概念</button>
+    </div>
+  </aside>
+
+  <!-- ============ 右侧可视化 ============ -->
+  <main class="stage">
+    <div class="stage-head">
+      <h2>平均数可视化</h2>
+      <p class="tip">💡 折线上的每个点代表一个人物的数据，上下起伏能看出谁多谁少。勾选“显示平均线”，看看平均数落在什么位置。</p>
+    </div>
+    <div class="canvas-wrap"><canvas id="chart"></canvas></div>
+  </main>
+</div>
+
+<!-- ============ 概念弹窗 ============ -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal-box">
+    <h3>什么是平均数？</h3>
+    <p>
+      平均数代表一组数据的<b>整体平均水平</b>，可以用<em>移多补少</em>，
+      或者<em>总和除以总个数</em>计算，平均数不一定等于其中某一个数据。
+    </p>
+    <button class="btn btn-primary" id="modalClose">我知道啦</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ================= 基础数据 ================= */
+  const COLORS = ['#2fbf9b','#a06cd5','#f5a623','#4a9ef0','#e8637c',
+                  '#6fbf73','#f2c14e','#ef7d3a','#5ec6d8','#b06fd6'];
+
+  const DEFAULT_DATA = [
+    { name:'张三', value:9 },
+    { name:'李四', value:7 },
+    { name:'王五', value:10 },
+    { name:'赵六', value:6 }
+  ];
+
+  const state = {
+    yMin: 0,
+    yMax: 13,
+    unit: '个',
+    showAvg: false,
+    showLine: true
+  };
+
+  let data = DEFAULT_DATA.map(d => ({ name:d.name, value:d.value }));
+
+  /* 基线：学生“输入数据阶段”的样子。 */
+  let baseline = data.map(d => ({ name:d.name, value:d.value }));
+
+  /* ================= DOM ================= */
+  const $ = id => document.getElementById(id);
+  const dataListEl = $('dataList');
+  const yMinInp = $('yMinInp');
+  const yMaxInp = $('yMaxInp');
+  const unitInp = $('unitInp');
+  const chkAvg  = $('chkAvg');
+  const chkLine = $('chkLine');
+  const canvas = $('chart');
+  const toastEl = $('toast');
+
+  const ansSum = $('ansSum');
+  const ansCount = $('ansCount');
+  const ansAvg = $('ansAvg');
+  const markSum = $('markSum');
+  const markCount = $('markCount');
+  const markAvg = $('markAvg');
+
+  /* ================= 工具函数 ================= */
+  function totalOf(){ return data.reduce((s,d)=>s+d.value,0); }
+  function avgOf(){ return data.length ? totalOf()/data.length : 0; }
+  function fmtNum(v){ return Number.isInteger(v) ? String(v) : v.toFixed(1); }
+
+  function hexA(hex, a){
+    const h = hex.replace('#','');
+    const r = parseInt(h.substring(0,2),16);
+    const g = parseInt(h.substring(2,4),16);
+    const b = parseInt(h.substring(4,6),16);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+
+  function roundRect(ctx,x,y,w,h,r){
+    r = Math.max(0, Math.min(r, w/2, h/2));
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.lineTo(x+w-r,y);
+    ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);
+    ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);
+    ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);
+    ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+  }
+
+  function niceStep(range){
+    if (range <= 15) return 1;
+    if (range <= 30) return 2;
+    if (range <= 75) return 5;
+    if (range <= 150) return 10;
+    return Math.ceil(range / 15);
+  }
+
+  const FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif';
+
+  let toastTimer = null;
+  function showToast(msg, ms, good){
+    toastEl.textContent = msg;
+    toastEl.classList.toggle('good', !!good);
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toastEl.classList.remove('on'), ms || 2600);
+  }
+
+  /* ================= 基线快照 ================= */
+  function snapshot(){
+    baseline = data.map(d => ({ name: d.name, value: d.value }));
+  }
+
+  function dataEqualsBaseline(){
+    if (data.length !== baseline.length) return false;
+    for (let i = 0; i < data.length; i++){
+      if (data[i].name !== baseline[i].name) return false;
+      if (data[i].value !== baseline[i].value) return false;
+    }
+    return true;
+  }
+
+  /* ================= 数据列表渲染 ================= */
+  function buildDataList(){
+    dataListEl.innerHTML = '';
+    data.forEach((d, i) => {
+      const row = document.createElement('div');
+      row.className = 'data-row';
+
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = COLORS[i % COLORS.length];
+
+      const nameInp = document.createElement('input');
+      nameInp.className = 'name-input';
+      nameInp.type = 'text';
+      nameInp.maxLength = 8;
+      nameInp.value = d.name;
+      nameInp.placeholder = '姓名';
+      nameInp.addEventListener('input', () => {
+        d.name = nameInp.value;
+        snapshot();
+        draw();
+      });
+
+      const minus = document.createElement('button');
+      minus.className = 'rbtn minus';
+      minus.type = 'button';
+      minus.textContent = '−';
+      minus.title = '减少 1';
+      minus.addEventListener('click', () => {
+        d.value = Math.max(0, d.value - 1);
+        snapshot();
+        refresh();
+      });
+
+      const val = document.createElement('span');
+      val.className = 'val';
+      val.textContent = d.value;
+      d._valEl = val;
+
+      const plus = document.createElement('button');
+      plus.className = 'rbtn plus';
+      plus.type = 'button';
+      plus.textContent = '＋';
+      plus.title = '增加 1';
+      plus.addEventListener('click', () => {
+        d.value = Math.min(999, d.value + 1);
+        snapshot();
+        refresh();
+      });
+
+      const del = document.createElement('button');
+      del.className = 'rbtn del';
+      del.type = 'button';
+      del.textContent = '✕';
+      del.title = '删除';
+      del.addEventListener('click', () => {
+        if (data.length <= 1){ showToast('至少要保留一组数据哦～'); return; }
+        data.splice(i, 1);
+        snapshot();
+        buildDataList();
+        refresh();
+      });
+
+      row.append(dot, nameInp, minus, val, plus, del);
+      dataListEl.appendChild(row);
+    });
+  }
+
+  /* ================= 清空学生答案 ================= */
+  function clearAnswers(){
+    [ansSum, ansCount, ansAvg].forEach(inp => {
+      inp.value = '';
+      inp.classList.remove('ok','bad');
+    });
+    [markSum, markCount, markAvg].forEach(m => {
+      m.textContent = '';
+      m.classList.remove('ok','bad');
+    });
+  }
+
+  /* ================= 刷新 ================= */
+  function refresh(){
+    data.forEach(d => { if (d._valEl) d._valEl.textContent = d.value; });
+    clearAnswers();
+    draw();
+  }
+
+  /* ================= 检查答案 ================= */
+  function applyMark(inp, mark, ok){
+    inp.classList.remove('ok','bad');
+    mark.classList.remove('ok','bad');
+    if (ok){
+      inp.classList.add('ok');
+      mark.textContent = '✓';
+      mark.classList.add('ok');
+    } else {
+      inp.classList.add('bad');
+      mark.textContent = '✕';
+      mark.classList.add('bad');
+    }
+  }
+
+  function checkAnswers(){
+    const total = totalOf();
+    const count = data.length;
+    const avg = count ? total / count : 0;
+
+    const sumVal = ansSum.value.trim();
+    const countVal = ansCount.value.trim();
+    const avgVal = ansAvg.value.trim();
+
+    let sumOk = false, countOk = false, avgOk = false;
+
+    if (sumVal !== '' && isFinite(parseFloat(sumVal))){
+      sumOk = Math.abs(parseFloat(sumVal) - total) < 0.001;
+    }
+    if (countVal !== '' && isFinite(parseFloat(countVal))){
+      countOk = Math.abs(parseFloat(countVal) - count) < 0.001;
+    }
+    if (avgVal !== '' && isFinite(parseFloat(avgVal))){
+      avgOk = Math.abs(parseFloat(avgVal) - avg) < 0.001;
+    }
+
+    applyMark(ansSum, markSum, sumOk);
+    applyMark(ansCount, markCount, countOk);
+    applyMark(ansAvg, markAvg, avgOk);
+
+    if (sumOk && countOk && avgOk){
+      showToast('🎉 全部正确！总和 ÷ 个数 = 平均数，真棒！', 3400, true);
+    } else if (!sumOk && !countOk && !avgOk){
+      showToast('再仔细数一数、算一算，重新填一填吧～');
+    } else {
+      showToast('有对有错，再检查一下哦～');
+    }
+  }
+
+  /* ================= 几何计算 ================= */
+  function computeGeom(){
+    const wrap = canvas.parentElement;
+    const rect = wrap.getBoundingClientRect();
+    const W = Math.max(0, Math.floor(rect.width));
+    const H = Math.max(0, Math.floor(rect.height));
+    const padL = 58, padR = 34, padT = 56, padB = 60;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    let yMin = Number(state.yMin);
+    let yMax = Number(state.yMax);
+    if (!isFinite(yMin)) yMin = 0;
+    if (!isFinite(yMax)) yMax = 10;
+    if (yMin < 0) yMin = 0;
+    if (yMax <= yMin) yMax = yMin + 1;
+
+    const range = yMax - yMin;
+    const unitH = plotH / range;
+    const n = data.length;
+    const band = n > 1 ? plotW / (n - 1) : plotW;
+
+    return {
+      W, H, padL, padR, padT, padB, plotW, plotH,
+      yMin, yMax, range, unitH, n,
+      yPos: v => padT + plotH - (v - yMin) * unitH,
+      cx: i => n > 1 ? padL + band * i : padL + plotW/2
+    };
+  }
+
+  /* ================= 绘制 ================= */
+  function draw(){
+    const g = computeGeom();
+    const { W, H, padL, padT, plotW, plotH,
+            yMin, yMax, n } = g;
+
+    if (W < 20 || H < 20 || plotW < 60 || plotH < 60) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(W*dpr) || canvas.height !== Math.round(H*dpr)){
+      canvas.width = Math.round(W*dpr);
+      canvas.height = Math.round(H*dpr);
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+
+    const values = data.map(d => d.value);
+
+    /* ---- 水平网格 + 刻度 ---- */
+    const step = niceStep(yMax - yMin);
+    ctx.setLineDash([4,4]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#eaf0f8';
+    ctx.font = '12.5px ' + FONT;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    const startV = Math.ceil(yMin / step) * step;
+    for (let v = startV; v <= yMax + 1e-9; v += step){
+      const y = g.yPos(v);
+      if (y < padT - 1 || y > padT + plotH + 1) continue;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + plotW, y);
+      ctx.stroke();
+      ctx.fillStyle = '#9aabc0';
+      ctx.fillText(String(Math.round(v*100)/100), padL - 10, y);
+    }
+    ctx.setLineDash([]);
+
+    /* ---- 折线统计图 ---- */
+    if (state.showLine && n > 0){
+      const pts = values.map((v, i) => ({
+        x: g.cx(i),
+        y: g.yPos(Math.max(0, v))
+      }));
+
+      // 折线
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(padL - 2, padT - 2, plotW + 4, plotH + 4);
+      ctx.clip();
+
+      ctx.setLineDash([8,5]);
+      ctx.lineWidth = 2.6;
+      ctx.strokeStyle = '#2f7de1';
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      pts.forEach((p,i) => i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // 数据点（圆点 + 白心）
+      pts.forEach((p, i) => {
+        const color = COLORS[i % COLORS.length];
+        ctx.save();
+        ctx.shadowColor = hexA(color, 0.45);
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 7, 0, Math.PI*2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+      });
+    }
+
+    /* ---- 平均线（勾选后显示） ---- */
+    const avg = n ? totalOf() / n : 0;
+    if (state.showAvg && n > 0 && avg >= yMin && avg <= yMax){
+      const y = g.yPos(avg);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(padL - 2, padT - 2, plotW + 4, plotH + 4);
+      ctx.clip();
+      ctx.strokeStyle = '#e8453c';
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + plotW, y);
+      ctx.stroke();
+      ctx.restore();
+
+      const label = '平均数: ' + avg.toFixed(1);
+      ctx.font = 'bold 13px ' + FONT;
+      const tw = ctx.measureText(label).width;
+      const bw = tw + 18, bh = 25;
+      const bx = padL + plotW - bw + 4;
+      let by = y - bh/2;
+      by = Math.max(padT + 5, Math.min(by, padT + plotH - bh - 5));
+      roundRect(ctx, bx, by, bw, bh, 7);
+      ctx.fillStyle = '#e8453c';
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, bx + bw/2, by + bh/2);
+    }
+
+    /* ---- 数据点数值标签 ---- */
+    if (n > 0){
+      ctx.font = 'bold 14px ' + FONT;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      for (let i = 0; i < n; i++){
+        const v = values[i];
+        const x = g.cx(i);
+        const y = Math.max(g.yPos(v) - 14, padT + 16);
+        const label = fmtNum(Math.round(v*10)/10);
+
+        const tw = ctx.measureText(label).width;
+        roundRect(ctx, x - tw/2 - 6, y - 16, tw + 12, 18, 6);
+        ctx.fillStyle = 'rgba(255,255,255,.86)';
+        ctx.fill();
+
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fillText(label, x, y - 1);
+      }
+    }
+
+    /* ---- 坐标轴 ---- */
+    ctx.strokeStyle = '#c9d6e6';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, padT + plotH);
+    ctx.lineTo(padL + plotW, padT + plotH);
+    ctx.stroke();
+
+    /* ---- 横轴姓名 ---- */
+    if (n > 0){
+      ctx.font = '14px ' + FONT;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#43566e';
+      const band = g.n > 1 ? plotW / (g.n - 1) : plotW;
+      for (let i = 0; i < n; i++){
+        let name = data[i].name || '未命名';
+        if (name.length > 7) name = name.slice(0,7) + '…';
+        ctx.fillText(name, g.cx(i), padT + plotH + 12, Math.max(40, band - 4));
+      }
+    }
+
+    /* ---- 单位提示 ---- */
+    ctx.font = '12px ' + FONT;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#a6b6ca';
+    ctx.fillText('单位：' + (state.unit || '—'), padL + 2, padT - 32);
+  }
+
+  /* ================= 事件绑定 ================= */
+  function bindEvents(){
+    yMinInp.addEventListener('input', () => {
+      let v = parseFloat(yMinInp.value);
+      if (!isFinite(v) || v < 0) v = 0;
+      state.yMin = v;
+      if (state.yMax <= state.yMin){
+        state.yMax = state.yMin + 1;
+        yMaxInp.value = state.yMax;
+      }
+      draw();
+    });
+
+    yMaxInp.addEventListener('input', () => {
+      let v = parseFloat(yMaxInp.value);
+      if (!isFinite(v) || v < 0) v = 10;
+      state.yMax = v;
+      if (state.yMax <= state.yMin){
+        state.yMin = Math.max(0, state.yMax - 1);
+        yMinInp.value = state.yMin;
+      }
+      draw();
+    });
+
+    unitInp.addEventListener('input', () => {
+      state.unit = unitInp.value;
+      draw();
+    });
+
+    chkAvg.addEventListener('change', e => { state.showAvg = e.target.checked; draw(); });
+    chkLine.addEventListener('change', e => { state.showLine = e.target.checked; draw(); });
+
+    /* 学生答案 */
+    [ansSum, ansCount, ansAvg].forEach((inp, i) => {
+      const mark = [markSum, markCount, markAvg][i];
+      inp.addEventListener('input', () => {
+        inp.classList.remove('ok','bad');
+        mark.textContent = '';
+        mark.classList.remove('ok','bad');
+      });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter'){ checkAnswers(); e.preventDefault(); }
+      });
+    });
+
+    $('checkBtn').addEventListener('click', checkAnswers);
+
+    $('addBtn').addEventListener('click', () => {
+      const idx = data.length + 1;
+      data.push({ name: '同学' + idx, value: 5 });
+      snapshot();
+      buildDataList();
+      refresh();
+    });
+
+    /* 重置：回到学生“输入数据阶段”的样子 */
+    $('resetBtn').addEventListener('click', () => {
+      if (dataEqualsBaseline()){
+        showToast('数据还没有变化，试试修改左侧的数据吧～');
+        return;
+      }
+
+      data = baseline.map(d => ({ name: d.name, value: d.value }));
+      buildDataList();
+      refresh();
+      showToast('↩️ 已回到你输入数据时的样子，可以重新探究啦！', 2800);
+    });
+
+    const mask = $('modalMask');
+    $('conceptBtn').addEventListener('click', () => mask.classList.add('on'));
+    $('modalClose').addEventListener('click', () => mask.classList.remove('on'));
+    mask.addEventListener('click', e => { if (e.target === mask) mask.classList.remove('on'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') mask.classList.remove('on'); });
+
+    if (window.ResizeObserver){
+      new ResizeObserver(() => draw()).observe(canvas.parentElement);
+    }
+    window.addEventListener('resize', draw);
+  }
+
+  /* ================= 启动 ================= */
+  buildDataList();
+  bindEvents();
+  refresh();
+  requestAnimationFrame(draw);
+  setTimeout(draw, 120);
+
+})();
+</script>
+</body>
+</html>
